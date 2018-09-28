@@ -94,6 +94,7 @@ class Shopify(object):
             api_key=app.config['SHOPIFY_API_KEY'],
             secret=app.config['SHOPIFY_SHARED_SECRET']
         )
+        self.scopes = app.config.get('SHOPIFY_SCOPES', [])
         app.before_request(self.before_request)
 
     def before_request(self):
@@ -122,7 +123,7 @@ class Shopify(object):
         :type url: str.
         """
         if scopes is None:
-            scopes = self.app.config.get('SHOPIFY_SCOPES', [])
+            scopes = self.scopes
         shop_session = shopify.Session("%s.myshopify.com" % shop_subdomain)
         permission_url = shop_session.create_permission_url(
             scopes, redirect_uri
