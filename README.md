@@ -71,7 +71,7 @@ decorator to ensure that the current shop the user is logged
 into is also the shop where the user clicked the admin link.
 
 ```
-from flask_shopify import shopify_login_required, assert_shop
+from flask_shopify import shopify_login_required, assert_shop, shopify
 
 @shopify_login_required
 @assert_shop
@@ -123,3 +123,46 @@ def logout():
     shopify.logout()
     return redirect('home')
 ```
+
+
+#### flask-shopify shopify
+
+the decorator shopify_login_required asserts a session in the shopify api. 
+
+    from flask_shopify import shopify_login_required, shopify
+
+    @shopify_login_required
+    @reports_bp.route('/')
+    def products():
+        product = shopify.Product.find()
+        return products
+
+
+#### flask session
+
+SHOPIFY_SHOP and SHOPIFY_TOKEN are stored in the session until logout is called
+
+    from flask import session
+
+    session['SHOPIFY_SHOP']
+    session['SHOPIFY_TOKEN']
+
+
+#### flask request
+
+request.shopify_session contains a reference to shopify_python_api.Session object
+
+    from flask import request
+
+    request.shopify_session
+
+
+#### flask current_app
+
+access the flask-shopify extention via `current_app.shopify`. 
+this is the flask-shopify extention
+
+    from flask import current_app
+
+    current_app.shopify
+
