@@ -87,10 +87,11 @@ class Shopify(object):
         self.tokengetter_func = self._session_token_getter
         self.tokensetter_func = self._session_token_setter
         self.login_view = None
+        self.shopify_api = shopify
 
     def init_app(self, app):
         app.shopify = self
-        shopify.Session.setup(
+        self.shopify_api.Session.setup(
             api_key=app.config['SHOPIFY_API_KEY'],
             secret=app.config['SHOPIFY_SHARED_SECRET']
         )
@@ -108,7 +109,7 @@ class Shopify(object):
         if shop_token is not None:
             # should be a valid token
             shop_session = shopify.Session(*shop_token)
-            shopify.ShopifyResource.activate_session(shop_session)
+            self.shopify_api.ShopifyResource.activate_session(shop_session)
             ctx.request.shopify_session = shop_session
         else:
             # not logged in, no session created
@@ -124,16 +125,16 @@ class Shopify(object):
         """
         if scopes is None:
             scopes = self.scopes
-        shop_session = shopify.Session("%s.myshopify.com" % shop_subdomain)
+        shop_session = self.shopify_api.Session("%s.myshopify.com" % shop_subdomain)
         permission_url = shop_session.create_permission_url(
             scopes, redirect_uri
         )
         return redirect(permission_url)
 
     def authenticate(self):
-        shop_session = shopify.Session(request.args['shop'])
+        shop_session = self.shopify_api.Session(request.args['shop'])
         token = shop_session.request_token(request.args)
-        shopify.ShopifyResource.activate_session(shop_session)
+        self.shopify_api.ShopifyResource.activate_session(shop_session)
         self.tokensetter_func(request.args['shop'], token)
         return shop_session
 
@@ -167,4 +168,4 @@ class Shopify(object):
     def logout(self):
         session.pop('SHOPIFY_SHOP', None)
         session.pop('SHOPIFY_TOKEN', None)
-        shopify.ShopifyResource.clear_session()
+        self.shopify_api.ShopifyResource.clear_session()
