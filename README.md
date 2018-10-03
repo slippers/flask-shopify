@@ -55,8 +55,8 @@ Using decorator
 ```
 from flask_shopify import shopify_login_required
 
-@shopify_login_required
 @app.route('/product')
+@shopify_login_required
 def product():
     product = shopify.Product.find(
         request.args['id']
@@ -73,9 +73,9 @@ into is also the shop where the user clicked the admin link.
 ```
 from flask_shopify import shopify_login_required, assert_shop, shopify
 
+@app.route('/product')
 @shopify_login_required
 @assert_shop
-@app.route('/product')
 def product():
     product = shopify.Product.find(
         request.args['id']
@@ -131,8 +131,8 @@ the decorator shopify_login_required asserts a session in the shopify api.
 
     from flask_shopify import shopify_login_required, shopify
 
-    @shopify_login_required
     @reports_bp.route('/')
+    @shopify_login_required
     def products():
         product = shopify.Product.find()
         return products
