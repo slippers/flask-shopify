@@ -89,8 +89,11 @@ class Shopify(object):
         self.login_view = None
         self.shopify_api = shopify
 
-    def init_app(self, app):
+    def init_app(self, app, connection=None):
         app.shopify = self
+        if connection:
+            self.shopify_api.base.ShopifyConnection = connection
+
         self.shopify_api.Session.setup(
             api_key=app.config['SHOPIFY_API_KEY'],
             secret=app.config['SHOPIFY_SHARED_SECRET']
