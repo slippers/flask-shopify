@@ -88,6 +88,7 @@ class Shopify(object):
         self.tokensetter_func = self._session_token_setter
         self.login_view = None
         self.shopify_api = shopify
+        self.version='2019-04'
 
     def init_app(self, app, connection=None):
         app.shopify = self
@@ -128,17 +129,17 @@ class Shopify(object):
         """
         if scopes is None:
             scopes = self.scopes
-        shop_session = self.shopify_api.Session("%s.myshopify.com" % shop_subdomain)
+        shop_session = self.shopify_api.Session("%s.myshopify.com" % shop_subdomain, version=self.version)
         permission_url = shop_session.create_permission_url(
             scopes, redirect_uri
         )
         return redirect(permission_url)
 
     def authenticate(self):
-        shop_session = self.shopify_api.Session(request.args['shop'])
+        shop_session = self.shopify_api.Session(request.args['shop'], version=self.version)
         token = shop_session.request_token(request.args)
         self.shopify_api.ShopifyResource.activate_session(shop_session)
-        self.tokensetter_func(request.args['shop'], token)
+        self.tokensetter_func(request.args['shop'], self.version, token)
         return shop_session
 
     def token_getter(self, f):
@@ -159,16 +160,18 @@ class Shopify(object):
     @classmethod
     def _session_token_getter(cls):
         try:
-            return session['SHOPIFY_SHOP'], session['SHOPIFY_TOKEN']
+            return session['SHOPIFY_SHOP'], session['SHOPIFY_VERSION'], session['SHOPIFY_TOKEN']
         except KeyError:
             return None
 
     @classmethod
-    def _session_token_setter(cls, shop, token):
+    def _session_token_setter(cls, shop, version, token):
         session['SHOPIFY_SHOP'] = shop
+        session['SHOPIFY_VERSION'] = version
         session['SHOPIFY_TOKEN'] = token
 
     def logout(self):
         session.pop('SHOPIFY_SHOP', None)
+        session.pop('SHOPIFY_VERSION', None)
         session.pop('SHOPIFY_TOKEN', None)
         self.shopify_api.ShopifyResource.clear_session()
